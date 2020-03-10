@@ -116,7 +116,7 @@
     - name: add admin user in rabitmq server
       shell: |
         docker exec rabbitmq sh -l -c "rabbitmqctl add_user admin password"
-        ignore_errors: yes
+      ignore_errors: yes
 
     - name: Add tags to admin user in rabbitmq server
       shell: |
