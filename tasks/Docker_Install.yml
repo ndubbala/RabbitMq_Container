@@ -1,0 +1,53 @@
+- name: Install EPEL
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install python
+  yum:
+     name: "{{ item }}"
+     state: present
+  loop:
+    - python36
+    - python36-devel
+    - python36-setuptools
+- name: Install pip
+  yum:
+    name: python-pip
+    state: present
+
+- name: install docker-py
+  pip: name=docker-py
+
+
+- name: Add Docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+
+
+- name: Enable Docker Edge repo
+  ini_file:
+    dest: /etc/yum.repos.d/docer-ce.repo
+    section: 'docker-ce-edge'
+    option: enabled
+
+
+- name: Enable Docker Test repo
+  ini_file:
+    dest: /etc/yum.repos.d/docer-ce.repo
+    section: 'docker-ce-test'
+    option: enabled
+
+
+- name: Install Docker
+  package:
+    name: docker-ce
+    state: latest
+
+
+- name: Start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes

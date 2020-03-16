@@ -1,0 +1,8 @@
+---
+- name: Rabbitmq cluster setup 
+  hosts: 172.16.10.101,172.16.9.172
+  tasks:
+  - name: installing docker
+    include: tasks/Docker_Install.yml
+  - name: RabbitMq Setup
+    include: tasks/Rabbit_Setup.yml

@@ -1,0 +1,133 @@
+    - name: pull docker image
+      docker_image:
+        name: rabbitmq:3-management
+        source: pull
+        state: present
+
+    - name: adding docker network
+      shell: "docker network create --driver=bridge --subnet=172.1.1.1/24 --gateway=172.1.1.1 rabbitmq_network"
+      ignore_errors: yes
+
+    - name: Build container
+      docker_container:
+        name: rabbitmq
+        hostname: rabbitmq
+        image: rabbitmq:3-management
+        networks:
+          - name:  'rabbitmq_network'
+            ipv4_address: "172.1.1.100"
+        ports:
+         - "5673:5672"
+         - "15673:15672"
+        env:
+            RABBITMQ_ERLANG_COOKIE='ems4123'
+
+
+    - name: Build container Node-1
+      docker_container:
+        name: rabbitmq-N1
+        hostname: rabbitmq-N1
+        image: rabbitmq:3-management
+        networks:
+          - name:  'rabbitmq_network'
+            ipv4_address: '172.1.1.101'
+        ports:
+         - "5674:5672"
+         - "15674:15672"
+        env:
+            RABBITMQ_ERLANG_COOKIE='ems4123'
+
+
+    - name: Build container Node-2
+      docker_container:
+        name: rabbitmq-N2
+        hostname: rabbitmq-N2
+        image: rabbitmq:3-management
+        networks:
+          - name:  'rabbitmq_network'
+            ipv4_address: '172.1.1.102'
+        ports:
+         - "5675:5672"
+         - "15675:15672"
+        env:
+            RABBITMQ_ERLANG_COOKIE='ems4123'
+
+
+    - name: Sleep sometime for container process
+      pause:
+        minutes: 3
+
+
+    - name: Getting containers list
+      shell: "docker ps --format '{{'{{'}}.Names{{'}}'}}'"
+      register: result
+
+
+    - name: Print docker containers
+      debug:
+        msg: "Print docker containers: {{ result.stdout_lines }}"
+
+
+    - name: add admin user in rabitmq server
+      shell: |
+        docker exec rabbitmq sh -l -c "rabbitmqctl add_user {{ user }} {{ rabbit_passwd }} "
+      ignore_errors: yes
+
+    - name: Add tags to admin user in rabbitmq server
+      shell: |
+        docker exec rabbitmq sh -l -c "rabbitmqctl set_user_tags {{ user }} administrator"
+
+    - name: add permissions to admin user in rabbitmq server
+      shell: |
+        docker exec rabbitmq sh -l -c 'rabbitmqctl set_permissions -p / {{ user }} ".*" ".*" ".*" '
+
+
+    - name: stop rabbitmq app in Node-1
+      shell: |
+        docker exec rabbitmq-N1 sh -l -c 'rabbitmqctl stop_app'
+
+
+    - name: stop rabbitmq app in Node-2
+      shell: |
+        docker exec rabbitmq-N2 sh -l -c 'rabbitmqctl stop_app'
+
+
+    - name: add cluster host entry in node-1
+      shell: |
+        docker exec rabbitmq-N1 sh -l -c "echo '172.1.1.100 rabbitmq' >> /etc/hosts"
+
+
+    - name: add cluster host entry in node-2
+      shell: |
+        docker exec -it rabbitmq-N1 /bin/sh -c "echo '172.1.1.100 rabbitmq' >> /etc/hosts"
+
+
+    - name: Sleep sometime for container process
+      pause:
+        minutes: 3
+
+    - name: Node-1 cluster add
+      shell: |
+        docker exec rabbitmq-N1 sh -l -c 'rabbitmqctl join_cluster rabbit@rabbitmq'
+
+
+    - name: Node-2 cluster add
+      shell: |
+        docker exec rabbitmq-N2 sh -l -c 'rabbitmqctl join_cluster rabbit@rabbitmq'
+
+
+
+    - name: Sleep sometime for container process
+      pause:
+        minutes: 3
+
+
+    - name: start rabbitmq app in Node-1
+      shell: |
+        docker exec rabbitmq-N1 sh -l -c 'rabbitmqctl start_app'
+
+
+    - name: start rabbitmq app in Node-2
+      shell: |
+        docker exec rabbitmq-N2 sh -l -c 'rabbitmqctl start_app'
+
