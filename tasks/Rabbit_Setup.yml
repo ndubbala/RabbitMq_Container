@@ -10,7 +10,6 @@
 
     - name: Build container
       docker_container:
-        name: rabbitmq
         container_name: rabbitmq
         image: rabbitmq:3-management
         ports:
@@ -22,7 +21,6 @@
 
     - name: Build container Node-1
       docker_container:
-        name: rabbitmq-N1
         container_name: rabbitmq-N1
         image: rabbitmq:3-management
         ports:
@@ -34,7 +32,6 @@
 
     - name: Build container Node-2
       docker_container:
-        name: rabbitmq-N2
         container_name: rabbitmq-N2
         image: rabbitmq:3-management
         ports:
