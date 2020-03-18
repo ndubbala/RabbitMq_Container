@@ -11,11 +11,8 @@
     - name: Build container
       docker_container:
         name: rabbitmq
-        hostname: rabbitmq
+        container_name: rabbitmq
         image: rabbitmq:3-management
-        networks:
-          - name:  'rabbitmq_network'
-            ipv4_address: "172.1.1.100"
         ports:
          - "5673:5672"
          - "15673:15672"
@@ -26,11 +23,8 @@
     - name: Build container Node-1
       docker_container:
         name: rabbitmq-N1
-        hostname: rabbitmq-N1
+        container_name: rabbitmq-N1
         image: rabbitmq:3-management
-        networks:
-          - name:  'rabbitmq_network'
-            ipv4_address: '172.1.1.101'
         ports:
          - "5674:5672"
          - "15674:15672"
@@ -41,11 +35,8 @@
     - name: Build container Node-2
       docker_container:
         name: rabbitmq-N2
-        hostname: rabbitmq-N2
+        container_name: rabbitmq-N2
         image: rabbitmq:3-management
-        networks:
-          - name:  'rabbitmq_network'
-            ipv4_address: '172.1.1.102'
         ports:
          - "5675:5672"
          - "15675:15672"
@@ -92,14 +83,14 @@
         docker exec rabbitmq-N2 sh -l -c 'rabbitmqctl stop_app'
 
 
-    - name: add cluster host entry in node-1
-      shell: |
-        docker exec rabbitmq-N1 sh -l -c "echo '172.1.1.100 rabbitmq' >> /etc/hosts"
+   # - name: add cluster host entry in node-1
+    #  shell: |
+     #   docker exec rabbitmq-N1 sh -l -c "echo '172.1.1.100 rabbitmq' >> /etc/hosts"
 
 
-    - name: add cluster host entry in node-2
-      shell: |
-        docker exec -it rabbitmq-N1 /bin/sh -c "echo '172.1.1.100 rabbitmq' >> /etc/hosts"
+    #- name: add cluster host entry in node-2
+     # shell: |
+     #   docker exec -it rabbitmq-N1 /bin/sh -c "echo '172.1.1.100 rabbitmq' >> /etc/hosts"
 
 
     - name: Sleep sometime for container process
